@@ -114,22 +114,28 @@ export default {
 
         },
         addconfirm() {
-            axios.post('http://localhost:3000/user/register', {
-                account: this.zhuceForm.id,
-                password: this.zhuceForm.password,
-                email: this.zhuceForm.email,
-                phoneNumber: this.zhuceForm.phoneNumber
-            }).then(res => {
-                if (res.data.code == 200) {
-                    this.$message.success('注册成功！')
-                    this.$refs.ruleForm.resetFields()
-                    this.dialogVisible = false
-                }
-                else {
-                    this.$message.error('注册失败！')
-                }
-                console.log(res.data);
-            })
+            if (this.zhuceForm.id == '' || this.zhuceForm.password == '' || this.zhuceForm.email == '' || this.zhuceForm.phoneNumber == '') {
+                this.$message.error('请填写完整信息！')
+                return
+            } else {
+                axios.post('http://localhost:3000/user/register', {
+                    account: this.zhuceForm.id,
+                    password: this.zhuceForm.password,
+                    email: this.zhuceForm.email,
+                    phoneNumber: this.zhuceForm.phoneNumber
+                }).then(res => {
+                    if (res.data.code == 200) {
+                        this.$message.success('注册成功！')
+                        this.$refs.ruleForm.resetFields()
+                        this.dialogVisible = false
+                    }
+                    else {
+                        this.$message.error('注册失败！')
+                    }
+                    console.log(res.data);
+                })
+            }
+
         }
     }
 }

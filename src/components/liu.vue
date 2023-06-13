@@ -45,6 +45,7 @@ export default {
                 content: this.myMsg
             }).then(res => {
                 console.log(res)
+                this.$message.success('发布成功')
                 this.getLeaveMsg()
             })
         },
@@ -55,6 +56,7 @@ export default {
                 msgId: id
             }).then(res => {
                 console.log(res.data)
+                this.$message.success('删除成功')
                 this.getLeaveMsg()
             }
             )

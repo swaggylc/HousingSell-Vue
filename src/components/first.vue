@@ -8,15 +8,19 @@
             <el-button type="danger" @click="logout" round>退出</el-button>
         </el-header>
         <el-main>
+            <!-- 搜索部分 -->
             <div class="ser">
                 <i class="el-icon-message-solid" style="margin-right: 20px; color:powderblue; font-size: 1.5rem;"></i>
-                <el-autocomplete class="inline-input" v-model="state" :fetch-suggestions="querySearch"
+                <el-autocomplete class="inline-input" v-model="search" :fetch-suggestions="querySearch"
                     placeholder="搜索售楼信息..." :trigger-on-focus="false"></el-autocomplete>
                 <el-button slot="append" icon="el-icon-search" style="background-color: #e4e7ed;"
                     @click="SerchMessage"></el-button>
                 <el-link type="info" style="margin-left: 5px; margin-bottom: -20px;" @click="serchdata">历史数据查询</el-link>
             </div>
+
             <el-divider></el-divider>
+
+            <!-- 轮播图 -->
             <div class="carousel">
                 <el-carousel :interval="4000" type="card" height="300px">
                     <el-carousel-item v-for="item in pic" :key="item.id">
@@ -26,6 +30,7 @@
             </div>
             <el-divider></el-divider>
 
+            <!-- 房屋卡片 -->
             <el-row style="margin-top: 10px; width: 100%;">
                 <div v-for="item in homeList" :key="item">
                     <el-col :span="8">
@@ -42,19 +47,12 @@
                             </div>
                         </el-card>
                     </el-col>
-
-
-
-
                 </div>
             </el-row>
 
-
-
             <el-divider></el-divider>
 
-
-
+            <!-- 发布房屋按钮 -->
             <div style="margin-top: 30px;">
                 <el-row>
                     <div class="addmsg">
@@ -69,8 +67,9 @@
             <el-card class="carousel">
                 <template>
                     <span style="font-size: 25px; font-family: Courier New;color: cornflowerblue">留言板</span>
-                    <div v-for="(item,index) in leaveMsg" :key="index">
-                        <el-alert :title="item.content" :type="getColor()" @close="deleteMsg(item.msgId)" style="margin-bottom: 20px;margin-top: 20px;"></el-alert>
+                    <div v-for="(item, index) in leaveMsg" :key="index">
+                        <el-alert :title="item.content" :type="getColor()" @close="deleteMsg(item.msgId)"
+                            style="margin-bottom: 20px;margin-top: 20px;"></el-alert>
                     </div>
 
                     <el-input type="textarea" placeholder="我来说点什么..." v-model="myMsg"
@@ -81,13 +80,14 @@
 
         </el-main>
 
+        <!-- 历史数据部分 -->
         <el-drawer title="历史数据查询" :visible.sync="drawer">
-            <el-table :data="tabledata" style="width: 100%;margin-left: 15px;">
-                <el-table-column prop="address" label="查询信息"></el-table-column>
-                <el-table-column prop="date" label="查询时间"></el-table-column>
+            <el-table :data="searchList" style="width: 100%;margin-left: 15px;">
+                <el-table-column prop="keyWord" label="查询信息"></el-table-column>
+                <el-table-column prop="time" label="查询时间"></el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button @click.native.prevent="deleteRow(scope.$index, tabledata)" type="text">
+                        <el-button @click.native.prevent="deleteRow(scope.$index, searchList)" type="text">
                             移除
                         </el-button>
                     </template>
@@ -171,6 +171,8 @@
 export default {
     data() {
         return {
+            // 搜索框数据
+            search: '',
             // 请求房屋数据
             homeList: [],
             // 发布房屋数据
@@ -206,10 +208,11 @@ export default {
             leaveColor: ['success', 'warning', 'info', 'error'],    //留言的颜色
             myMsg: '',    //发送的留言
 
-            state: '',
+            state: '',  
             drawer: false,
             isShow: false,
-            pic: [
+            
+            pic: [      //轮播图数据
                 { id: 0, idView: require('../assets/1.png') },
                 { id: 1, idView: require('../assets/3.png') },
                 { id: 2, idView: require('../assets/2.png') },
@@ -217,37 +220,10 @@ export default {
                 { id: 4, idView: require('../assets/6.png') },
                 { id: 5, idView: require('../assets/5.png') }
             ],
-            tabledata: [
-                {
-                    address: '华宸龙隐山',
-                    date: '2022-12-16'
-                },
-                {
-                    address: '和昌莱蒙都会',
-                    date: '2022-12-18'
-                },
-                {
-                    address: '绿地新里城(VR科创城)',
-                    date: '2022-12-15'
-                },
-                {
-                    address: '江铃龙湖云璟',
-                    date: '2022-12-14'
-                }
-            ],
-            liuyan: '',
-            liuyan2: '',
-            dialog1: false,
-            dialog2: false,
-            dialogVisible: false,
-            fabuForm: {
-                mony: '1570000￥',
-                area2: '118平',
-                area1: '320平',
-                adds: '上海市长宁区淞虹路661号',
-                id: '002',
-                name: '赣电洪府'
-            }
+            searchList: [],    //搜索结果列表
+            dialog1: false,   
+            dialog2: false, 
+            dialogVisible: false,   //发布信息表单
         }
     },
     created() {
@@ -275,11 +251,16 @@ export default {
         },
         // 发布留言
         sendMsg() {
+            if (this.myMsg == '') {
+                this.$message.error('留言不能为空')
+                return
+            }
             this.$http.post('http://localhost:3000/leave/add', {
                 content: this.myMsg
             }).then(res => {
                 console.log(res)
                 this.getLeaveMsg()
+                this.$message.success('留言成功')
             })
         },
         // 删除留言
@@ -289,6 +270,7 @@ export default {
                 msgId: id
             }).then(res => {
                 console.log(res.data)
+                this.$message.success('删除成功')
                 this.getLeaveMsg()
             }
             )
@@ -301,38 +283,42 @@ export default {
         logout() {
             this.$router.push('/Login')
         },
-        querySearch(queryString, cb) {
-            var restaurants = this.restaurants;
-            var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-            // 调用 callback 返回建议列表的数据
-            cb(results);
-        },
-        createFilter(queryString) {
-            return (restaurant) => {
-                return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-            };
-        },
-        loadAll() {
-            return [
-                { "value": "绿地新里城(VR科创城)", "address": "长宁区新渔路144号" },
-                { "value": "赣电洪府", "address": "上海市长宁区淞虹路661号" },
-                { "value": "南昌保利天洪", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" },
-                { "value": "华宸龙隐山", "address": "红谷滩" },
-                { "value": "和昌莱蒙都会", "address": "象湖新城" },
-                { "value": "江铃龙湖云璟", "address": "青云浦区" },
-                { "value": "绿地新城", "address": "长宁区新渔路144号" }
-            ];
-        },
+
+
+
+        // querySearch(queryString, cb) {
+        //     var restaurants = this.restaurants;
+        //     var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+        //     // 调用 callback 返回建议列表的数据
+        //     cb(results);
+        // },
+        // createFilter(queryString) {
+        //     return (restaurant) => {
+        //         return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+        //     };
+        // },
+        // loadAll() {
+        //     return [
+        //         { "value": "绿地新里城(VR科创城)", "address": "长宁区新渔路144号" },
+        //         { "value": "赣电洪府", "address": "上海市长宁区淞虹路661号" },
+        //         { "value": "南昌保利天洪", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" },
+        //         { "value": "华宸龙隐山", "address": "红谷滩" },
+        //         { "value": "和昌莱蒙都会", "address": "象湖新城" },
+        //         { "value": "江铃龙湖云璟", "address": "青云浦区" },
+        //         { "value": "绿地新城", "address": "长宁区新渔路144号" }
+        //     ];
+        // },
+
+
+        // 显示搜索记录
         serchdata() {
             this.drawer = true
         },
+        // 移除搜索记录的回调
         deleteRow(index, rows) {
             rows.splice(index, 1);
         },
         //添加留言
-        addliuyan() {
-            this.liuyan2 = this.liuyan
-        },
         //了解详情展示页面
         know(id) {
             // console.log(id);
@@ -365,25 +351,34 @@ export default {
 
 
         },
-        //搜索信息
+        //搜索信息的回调
         SerchMessage() {
-            if (this.state == '绿地新里城(VR科创城)') {
-                this.dialog1 = true
-            }
-            if (this.state == '赣电洪府') {
-                this.dialog2 = true
-            }
+            // console.log(this.search);
+            // 将search的值添加进searchList
+            const time = new Date()
+            this.searchList.push({
+                keyWord: this.search,
+                time: time.toLocaleString()
+            })
+
         },
         isChange() {
             this.dialogVisible = true
         },
         //发布信息
         addconfirm() {
-            this.$http.post('http://localhost:3000/home/add', this.addList).then(res => {
-                console.log(res);
-                this.dialogVisible = false
-                this.getHomeList()
-            })
+            if (this.addList.allArea == '' || this.addList.actualArea == '' || this.addList.type == '' || this.addList.address == '' || this.addList.price == '' || this.addList.buyTime == '' || this.addList.imgUrl == '' || this.addList.sellUserId == '') {
+                this.$message.error('请填写完整信息')
+
+            } else {
+                this.$http.post('http://localhost:3000/home/add', this.addList).then(res => {
+                    console.log(res);
+                    this.dialogVisible = false
+                    this.$message.success('发布成功')
+                    this.getHomeList()
+                })
+            }
+
         }
     },
     mounted() {

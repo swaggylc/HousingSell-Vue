@@ -97,11 +97,15 @@ export default {
                     userId: data.userId
                 }
             }).then(res => {
+                this.$message.success('删除成功')
                 return res
                 // console.log(res)
                 // this.getUserInfo()
             }
-            )
+            ).catch(err => {
+                this.$message.error('删除失败')
+                return err
+            })
         },
         edit(data) {
             console.log(data);

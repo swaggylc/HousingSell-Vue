@@ -109,6 +109,7 @@ export default {
                 }
             }).then(res => {
                 this.getHomeInfo()
+                this.$message.success('删除成功!')
                 return res
             })
 
@@ -132,6 +133,7 @@ export default {
             this.$http.post('http://localhost:3000/home/update', this.updataInfo).then(res => {
                 this.dialogVisible = false
                 this.getHomeInfo()
+                this.$message.success('修改成功!')
                 return res
             })
         }

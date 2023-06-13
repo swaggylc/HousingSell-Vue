@@ -11,8 +11,8 @@
             <!-- 搜索部分 -->
             <div class="ser">
                 <i class="el-icon-message-solid" style="margin-right: 20px; color:powderblue; font-size: 1.5rem;"></i>
-                <el-autocomplete class="inline-input" v-model="search" :fetch-suggestions="querySearch"
-                    placeholder="搜索售楼信息..." :trigger-on-focus="false"></el-autocomplete>
+                <el-input style="width: 200px;" placeholder="请输入内容" v-model="search" clearable>
+                </el-input>
                 <el-button slot="append" icon="el-icon-search" style="background-color: #e4e7ed;"
                     @click="SerchMessage"></el-button>
                 <el-link type="info" style="margin-left: 5px; margin-bottom: -20px;" @click="serchdata">历史数据查询</el-link>
@@ -82,12 +82,12 @@
 
         <!-- 历史数据部分 -->
         <el-drawer title="历史数据查询" :visible.sync="drawer">
-            <el-table :data="searchList" style="width: 100%;margin-left: 15px;">
+            <el-table :data="searchHistory" style="width: 100%;margin-left: 15px;">
                 <el-table-column prop="keyWord" label="查询信息"></el-table-column>
                 <el-table-column prop="time" label="查询时间"></el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button @click.native.prevent="deleteRow(scope.$index, searchList)" type="text">
+                        <el-button @click.native.prevent="deleteRow(scope.$index, searchHistory)" type="text">
                             移除
                         </el-button>
                     </template>
@@ -173,6 +173,8 @@ export default {
         return {
             // 搜索框数据
             search: '',
+            searchList: [],    //搜索结果列表
+            searchHistory: [],    //搜索历史记录
             // 请求房屋数据
             homeList: [],
             // 发布房屋数据
@@ -208,10 +210,10 @@ export default {
             leaveColor: ['success', 'warning', 'info', 'error'],    //留言的颜色
             myMsg: '',    //发送的留言
 
-            state: '',  
-            drawer: false,
+            state: '',
+            drawer: false,  //搜索历史记录的抽屉的状态
             isShow: false,
-            
+
             pic: [      //轮播图数据
                 { id: 0, idView: require('../assets/1.png') },
                 { id: 1, idView: require('../assets/3.png') },
@@ -220,9 +222,8 @@ export default {
                 { id: 4, idView: require('../assets/6.png') },
                 { id: 5, idView: require('../assets/5.png') }
             ],
-            searchList: [],    //搜索结果列表
-            dialog1: false,   
-            dialog2: false, 
+            dialog1: false,
+            dialog2: false,
             dialogVisible: false,   //发布信息表单
         }
     },
@@ -276,40 +277,9 @@ export default {
             )
         },
 
-
-
-
-
         logout() {
             this.$router.push('/Login')
         },
-
-
-
-        // querySearch(queryString, cb) {
-        //     var restaurants = this.restaurants;
-        //     var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-        //     // 调用 callback 返回建议列表的数据
-        //     cb(results);
-        // },
-        // createFilter(queryString) {
-        //     return (restaurant) => {
-        //         return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-        //     };
-        // },
-        // loadAll() {
-        //     return [
-        //         { "value": "绿地新里城(VR科创城)", "address": "长宁区新渔路144号" },
-        //         { "value": "赣电洪府", "address": "上海市长宁区淞虹路661号" },
-        //         { "value": "南昌保利天洪", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" },
-        //         { "value": "华宸龙隐山", "address": "红谷滩" },
-        //         { "value": "和昌莱蒙都会", "address": "象湖新城" },
-        //         { "value": "江铃龙湖云璟", "address": "青云浦区" },
-        //         { "value": "绿地新城", "address": "长宁区新渔路144号" }
-        //     ];
-        // },
-
-
         // 显示搜索记录
         serchdata() {
             this.drawer = true
@@ -351,14 +321,33 @@ export default {
 
 
         },
-        //搜索信息的回调
+        //点击搜索按钮的回调
         SerchMessage() {
             // console.log(this.search);
-            // 将search的值添加进searchList
+            // 将search的值添加进searchHistory
             const time = new Date()
-            this.searchList.push({
+            this.searchHistory.push({
                 keyWord: this.search,
                 time: time.toLocaleString()
+            })
+
+            // 向服务器发送搜索信息
+            this.$http.post('http://localhost:3000/home/search', {
+                search: this.search,
+            }).then(res => {
+                // 返回的结果
+                // console.log(res.data);
+                if (res.data.code == 201) {
+                    this.$message.error('查询失败')
+                }
+                if (res.data.data.length == 0) {
+                    this.$message.error('没有找到相关信息')
+                }
+                this.searchList = res.data.data
+                // console.log(this.searchList);
+                // 将搜索结果渲染到页面
+                this.homeList = this.searchList
+
             })
 
         },

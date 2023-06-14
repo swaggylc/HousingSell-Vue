@@ -10,7 +10,7 @@
                 <el-alert :title="item.content" :type="getColor()" style="margin-bottom: 20px;margin-top: 20px;"
                     @close="deleteMsg(item.msgId)"></el-alert>
             </div>
-            <el-input type="textarea" placeholder="我来说点什么..." v-model="myMsg" style="margin-bottom: 20px;"></el-input>
+            <el-input type="textarea" placeholder="我来说点什么..." v-model.lazy="myMsg" style="margin-bottom: 20px;"></el-input>
             <el-button type="primary" @click="sendMsg">发布</el-button>
         </el-card>
     </div>

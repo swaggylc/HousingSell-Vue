@@ -8,10 +8,11 @@
             <el-button type="danger" @click="logout" round>退出</el-button>
         </el-header>
         <el-main>
+
             <!-- 搜索部分 -->
             <div class="ser">
                 <i class="el-icon-message-solid" style="margin-right: 20px; color:powderblue; font-size: 1.5rem;"></i>
-                <el-input style="width: 200px;" placeholder="请输入内容" v-model="search" clearable>
+                <el-input style="width: 200px;" placeholder="请输入内容" v-model="search" @clear="getHomeList" clearable>
                 </el-input>
                 <el-button slot="append" icon="el-icon-search" style="background-color: #e4e7ed;"
                     @click="SerchMessage"></el-button>
@@ -263,6 +264,7 @@ export default {
                 this.getLeaveMsg()
                 this.$message.success('留言成功')
             })
+            this.myMsg = ''
         },
         // 删除留言
         deleteMsg(id) {
@@ -288,7 +290,6 @@ export default {
         deleteRow(index, rows) {
             rows.splice(index, 1);
         },
-        //添加留言
         //了解详情展示页面
         know(id) {
             // console.log(id);
@@ -323,6 +324,10 @@ export default {
         },
         //点击搜索按钮的回调
         SerchMessage() {
+            if(this.search == ''){
+                this.$message.error('搜索内容不能为空')
+                return
+            }
             // console.log(this.search);
             // 将search的值添加进searchHistory
             const time = new Date()
@@ -347,7 +352,6 @@ export default {
                 // console.log(this.searchList);
                 // 将搜索结果渲染到页面
                 this.homeList = this.searchList
-
             })
 
         },
@@ -368,7 +372,8 @@ export default {
                 })
             }
 
-        }
+        },
+
     },
     mounted() {
         this.restaurants = this.loadAll();
